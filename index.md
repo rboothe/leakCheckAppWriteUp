@@ -39,123 +39,138 @@ The Potential Applications are Immense
 
 ---
 
-## Choice of the Model - The Base Study
+##  Description of the App
 
-A 2013 study done on the Wei River Basin in China looked at the factors affecting domestic water consumption in rural households (http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3745410/)
+### As originally intended :
 
-Factors such as water supply pattern and vegetable garden area were found to be highly correlated with consumption.  The study assisted with improving the safety and access of water supply to rural China...but also served to birth the idea for this project. However, it was used only as a guide in creating the model.
+The App accepts inputs by the user and uses a random forest based model to predict whether or not his/her premises has a leak. The model is built using a downloaded dataset of water useage from trusted site such as Data.gov
 
-### Shortcomings of the App
+The first 4 inputs were found to be highly correlated to water consumption :  
+* No. of persons in household
+* Existence of a vegetable garden
+* whether urban or rural
+* Size of property  
 
-Following were the problems encountered when building the model and the steps taken to mitigate them:
-
-1. Problem: Appropriate Dataset to train the model was unavailable
-Work Around: Sample dataset created using random number generator
-
-2. Problem: Debugging the errors due to coercion was unending.  
-Work Around: A threshold of 10 was "hard-wired" into the code instead of generating a prediction using a random forest model
-
-As a result the only entry affecting the outcome is the last (the monthly consumption)
-
+The last entry is the observed consumption - which is compared with the expected value predicted by the model to render a verdict.
 
 ---
 
-##  Description of the App (as originally intended)
+##  Description of the App (cont'd...)
 
-Five inputs are taken using a mix of radio buttons, numerical input boxes and text input boxes (see below).  A random Forest Model is built using data downloaded from Data.gov, and an expected consumption predicted - which is compared with actaul amount entered to determine the likelihood of a leak.  
 
+### Shortcomings of the App
+
+1. Problem: Appropriate Dataset to train the model was unavailable. Work Around: Sample dataset created using random number generator
+
+2. Problem: Debugging the errors due to coercion was unending.  Work Around: __A threshold of 10__ was "hard-wired" into the code instead of generating a prediction using a random forest model
+
+As a result the only entry affecting the outcome is the last (the monthly consumption - which renders "Leak" for values > 10).  See user interface below:
 
 
 ```r
-slidifyUI(
+slidifyUI(fluidPage(
     sidebarLayout(
         sidebarPanel(
             numericInput("ni.mem", label="Number of Persons in Household",
                          0, min=1, max=30, step=1),
             
             radioButtons("rb.gar", label="Do you have a Vegetable Garden ?",
-                         c("Yes" = 1,
-                           "No" = 0)),
-            
+                        c("Yes" = 1,
+                         "No" = 0)),
+
             radioButtons("rb.rur", label="Do you live in the City ?",
-                         c("Yes" = 1,
-                           "No" = 0)),
-            
+                       c("Yes" = 1,
+                        "No" = 0)),
+
             textInput("ti.acr", label="Size of Premises (in acres)"),
             
             textInput("ti.use", label="What is your Monthly water consumption (in gallons)"),
-            
+                       
             submitButton("Submit")
         ),
         
         mainPanel(
+           br(),
+           br(),
+           br(),
+           br(),
+           h3("The Verdict :"),
+           verbatimTextOutput("op1")
+            
         )
     )
+    
+)
+    
 )
 ```
 
 ```
 ## <div class="row-fluid">
-##   <div class="row">
-##     <div class="col-sm-4">
-##       <form class="well">
-##         <div class="form-group shiny-input-container">
-##           <label for="ni.mem">Number of Persons in Household</label>
-##           <input id="ni.mem" type="number" class="form-control" value="0" min="1" max="30" step="1"/>
-##         </div>
-##         <div id="rb.gar" class="form-group shiny-input-radiogroup shiny-input-container">
-##           <label class="control-label" for="rb.gar">Do you have a Vegetable Garden ?</label>
-##           <div class="shiny-options-group">
-##             <div class="radio">
-##               <label>
-##                 <input type="radio" name="rb.gar" value="1" checked="checked"/>
-##                 <span>Yes</span>
-##               </label>
-##             </div>
-##             <div class="radio">
-##               <label>
-##                 <input type="radio" name="rb.gar" value="0"/>
-##                 <span>No</span>
-##               </label>
+##   <div class="container-fluid">
+##     <div class="row">
+##       <div class="col-sm-4">
+##         <form class="well">
+##           <div class="form-group shiny-input-container">
+##             <label for="ni.mem">Number of Persons in Household</label>
+##             <input id="ni.mem" type="number" class="form-control" value="0" min="1" max="30" step="1"/>
+##           </div>
+##           <div id="rb.gar" class="form-group shiny-input-radiogroup shiny-input-container">
+##             <label class="control-label" for="rb.gar">Do you have a Vegetable Garden ?</label>
+##             <div class="shiny-options-group">
+##               <div class="radio">
+##                 <label>
+##                   <input type="radio" name="rb.gar" value="1" checked="checked"/>
+##                   <span>Yes</span>
+##                 </label>
+##               </div>
+##               <div class="radio">
+##                 <label>
+##                   <input type="radio" name="rb.gar" value="0"/>
+##                   <span>No</span>
+##                 </label>
+##               </div>
 ##             </div>
 ##           </div>
-##         </div>
-##         <div id="rb.rur" class="form-group shiny-input-radiogroup shiny-input-container">
-##           <label class="control-label" for="rb.rur">Do you live in the City ?</label>
-##           <div class="shiny-options-group">
-##             <div class="radio">
-##               <label>
-##                 <input type="radio" name="rb.rur" value="1" checked="checked"/>
-##                 <span>Yes</span>
-##               </label>
-##             </div>
-##             <div class="radio">
-##               <label>
-##                 <input type="radio" name="rb.rur" value="0"/>
-##                 <span>No</span>
-##               </label>
+##           <div id="rb.rur" class="form-group shiny-input-radiogroup shiny-input-container">
+##             <label class="control-label" for="rb.rur">Do you live in the City ?</label>
+##             <div class="shiny-options-group">
+##               <div class="radio">
+##                 <label>
+##                   <input type="radio" name="rb.rur" value="1" checked="checked"/>
+##                   <span>Yes</span>
+##                 </label>
+##               </div>
+##               <div class="radio">
+##                 <label>
+##                   <input type="radio" name="rb.rur" value="0"/>
+##                   <span>No</span>
+##                 </label>
+##               </div>
 ##             </div>
 ##           </div>
-##         </div>
-##         <div class="form-group shiny-input-container">
-##           <label for="ti.acr">Size of Premises (in acres)</label>
-##           <input id="ti.acr" type="text" class="form-control" value=""/>
-##         </div>
-##         <div class="form-group shiny-input-container">
-##           <label for="ti.use">What is your Monthly water consumption (in gallons)</label>
-##           <input id="ti.use" type="text" class="form-control" value=""/>
-##         </div>
-##         <div>
-##           <button type="submit" class="btn btn-primary">Submit</button>
-##         </div>
-##       </form>
+##           <div class="form-group shiny-input-container">
+##             <label for="ti.acr">Size of Premises (in acres)</label>
+##             <input id="ti.acr" type="text" class="form-control" value=""/>
+##           </div>
+##           <div class="form-group shiny-input-container">
+##             <label for="ti.use">What is your Monthly water consumption (in gallons)</label>
+##             <input id="ti.use" type="text" class="form-control" value=""/>
+##           </div>
+##           <div>
+##             <button type="submit" class="btn btn-primary">Submit</button>
+##           </div>
+##         </form>
+##       </div>
+##       <div class="col-sm-8">
+##         <br/>
+##         <br/>
+##         <br/>
+##         <br/>
+##         <h3>The Verdict :</h3>
+##         <pre id="op1" class="shiny-text-output"></pre>
+##       </div>
 ##     </div>
-##     <div class="col-sm-8"></div>
 ##   </div>
 ## </div>
 ```
-
----
-
-
-

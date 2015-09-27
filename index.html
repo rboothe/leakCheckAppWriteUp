@@ -78,25 +78,23 @@
 
 <slide class="" id="slide-3" style="background:;">
   <hgroup>
-    <h2>Choice of the Model - The Base Study</h2>
+    <h2>Description of the App</h2>
   </hgroup>
   <article data-timings="">
-    <p>A 2013 study done on the Wei River Basin in China looked at the factors affecting domestic water consumption in rural households (<a href="http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3745410/">http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3745410/</a>)</p>
+    <h3>As originally intended :</h3>
 
-<p>Factors such as water supply pattern and vegetable garden area were found to be highly correlated with consumption.  The study assisted with improving the safety and access of water supply to rural China...but also served to birth the idea for this project. However, it was used only as a guide in creating the model.</p>
+<p>The App accepts inputs by the user and uses a random forest based model to predict whether or not his/her premises has a leak. The model is built using a downloaded dataset of water useage from trusted site such as Data.gov</p>
 
-<h3>Shortcomings of the App</h3>
+<p>The first 4 inputs were found to be highly correlated to water consumption :  </p>
 
-<p>Following were the problems encountered when building the model and the steps taken to mitigate them:</p>
+<ul>
+<li>No. of persons in household</li>
+<li>Existence of a vegetable garden</li>
+<li>whether urban or rural</li>
+<li>Size of property<br></li>
+</ul>
 
-<ol>
-<li><p>Problem: Appropriate Dataset to train the model was unavailable
-Work Around: Sample dataset created using random number generator</p></li>
-<li><p>Problem: Debugging the errors due to coercion was unending.<br>
-Work Around: A threshold of 10 was &quot;hard-wired&quot; into the code instead of generating a prediction using a random forest model</p></li>
-</ol>
-
-<p>As a result the only entry affecting the outcome is the last (the monthly consumption)</p>
+<p>The last entry is the observed consumption - which is compared with the expected value predicted by the model to render a verdict.</p>
 
   </article>
   <!-- Presenter Notes -->
@@ -104,24 +102,31 @@ Work Around: A threshold of 10 was &quot;hard-wired&quot; into the code instead 
 
 <slide class="" id="slide-4" style="background:;">
   <hgroup>
-    <h2>Description of the App (as originally intended)</h2>
+    <h2>Description of the App (cont&#39;d...)</h2>
   </hgroup>
   <article data-timings="">
-    <p>Five inputs are taken using a mix of radio buttons, numerical input boxes and text input boxes (see below).  A random Forest Model is built using data downloaded from Data.gov, and an expected consumption predicted - which is compared with actaul amount entered to determine the likelihood of a leak.  </p>
+    <h3>Shortcomings of the App</h3>
 
-<pre><code class="r">slidifyUI(
+<ol>
+<li><p>Problem: Appropriate Dataset to train the model was unavailable. Work Around: Sample dataset created using random number generator</p></li>
+<li><p>Problem: Debugging the errors due to coercion was unending.  Work Around: <strong>A threshold of 10</strong> was &quot;hard-wired&quot; into the code instead of generating a prediction using a random forest model</p></li>
+</ol>
+
+<p>As a result the only entry affecting the outcome is the last (the monthly consumption - which renders &quot;Leak&quot; for values &gt; 10).  See user interface below:</p>
+
+<pre><code class="r">slidifyUI(fluidPage(
     sidebarLayout(
         sidebarPanel(
             numericInput(&quot;ni.mem&quot;, label=&quot;Number of Persons in Household&quot;,
                          0, min=1, max=30, step=1),
 
             radioButtons(&quot;rb.gar&quot;, label=&quot;Do you have a Vegetable Garden ?&quot;,
-                         c(&quot;Yes&quot; = 1,
-                           &quot;No&quot; = 0)),
+                        c(&quot;Yes&quot; = 1,
+                         &quot;No&quot; = 0)),
 
             radioButtons(&quot;rb.rur&quot;, label=&quot;Do you live in the City ?&quot;,
-                         c(&quot;Yes&quot; = 1,
-                           &quot;No&quot; = 0)),
+                       c(&quot;Yes&quot; = 1,
+                        &quot;No&quot; = 0)),
 
             textInput(&quot;ti.acr&quot;, label=&quot;Size of Premises (in acres)&quot;),
 
@@ -131,78 +136,90 @@ Work Around: A threshold of 10 was &quot;hard-wired&quot; into the code instead 
         ),
 
         mainPanel(
+           br(),
+           br(),
+           br(),
+           br(),
+           h3(&quot;The Verdict :&quot;),
+           verbatimTextOutput(&quot;op1&quot;)
+
         )
     )
+
+)
+
 )
 </code></pre>
 
 <pre><code>## &lt;div class=&quot;row-fluid&quot;&gt;
-##   &lt;div class=&quot;row&quot;&gt;
-##     &lt;div class=&quot;col-sm-4&quot;&gt;
-##       &lt;form class=&quot;well&quot;&gt;
-##         &lt;div class=&quot;form-group shiny-input-container&quot;&gt;
-##           &lt;label for=&quot;ni.mem&quot;&gt;Number of Persons in Household&lt;/label&gt;
-##           &lt;input id=&quot;ni.mem&quot; type=&quot;number&quot; class=&quot;form-control&quot; value=&quot;0&quot; min=&quot;1&quot; max=&quot;30&quot; step=&quot;1&quot;/&gt;
-##         &lt;/div&gt;
-##         &lt;div id=&quot;rb.gar&quot; class=&quot;form-group shiny-input-radiogroup shiny-input-container&quot;&gt;
-##           &lt;label class=&quot;control-label&quot; for=&quot;rb.gar&quot;&gt;Do you have a Vegetable Garden ?&lt;/label&gt;
-##           &lt;div class=&quot;shiny-options-group&quot;&gt;
-##             &lt;div class=&quot;radio&quot;&gt;
-##               &lt;label&gt;
-##                 &lt;input type=&quot;radio&quot; name=&quot;rb.gar&quot; value=&quot;1&quot; checked=&quot;checked&quot;/&gt;
-##                 &lt;span&gt;Yes&lt;/span&gt;
-##               &lt;/label&gt;
-##             &lt;/div&gt;
-##             &lt;div class=&quot;radio&quot;&gt;
-##               &lt;label&gt;
-##                 &lt;input type=&quot;radio&quot; name=&quot;rb.gar&quot; value=&quot;0&quot;/&gt;
-##                 &lt;span&gt;No&lt;/span&gt;
-##               &lt;/label&gt;
+##   &lt;div class=&quot;container-fluid&quot;&gt;
+##     &lt;div class=&quot;row&quot;&gt;
+##       &lt;div class=&quot;col-sm-4&quot;&gt;
+##         &lt;form class=&quot;well&quot;&gt;
+##           &lt;div class=&quot;form-group shiny-input-container&quot;&gt;
+##             &lt;label for=&quot;ni.mem&quot;&gt;Number of Persons in Household&lt;/label&gt;
+##             &lt;input id=&quot;ni.mem&quot; type=&quot;number&quot; class=&quot;form-control&quot; value=&quot;0&quot; min=&quot;1&quot; max=&quot;30&quot; step=&quot;1&quot;/&gt;
+##           &lt;/div&gt;
+##           &lt;div id=&quot;rb.gar&quot; class=&quot;form-group shiny-input-radiogroup shiny-input-container&quot;&gt;
+##             &lt;label class=&quot;control-label&quot; for=&quot;rb.gar&quot;&gt;Do you have a Vegetable Garden ?&lt;/label&gt;
+##             &lt;div class=&quot;shiny-options-group&quot;&gt;
+##               &lt;div class=&quot;radio&quot;&gt;
+##                 &lt;label&gt;
+##                   &lt;input type=&quot;radio&quot; name=&quot;rb.gar&quot; value=&quot;1&quot; checked=&quot;checked&quot;/&gt;
+##                   &lt;span&gt;Yes&lt;/span&gt;
+##                 &lt;/label&gt;
+##               &lt;/div&gt;
+##               &lt;div class=&quot;radio&quot;&gt;
+##                 &lt;label&gt;
+##                   &lt;input type=&quot;radio&quot; name=&quot;rb.gar&quot; value=&quot;0&quot;/&gt;
+##                   &lt;span&gt;No&lt;/span&gt;
+##                 &lt;/label&gt;
+##               &lt;/div&gt;
 ##             &lt;/div&gt;
 ##           &lt;/div&gt;
-##         &lt;/div&gt;
-##         &lt;div id=&quot;rb.rur&quot; class=&quot;form-group shiny-input-radiogroup shiny-input-container&quot;&gt;
-##           &lt;label class=&quot;control-label&quot; for=&quot;rb.rur&quot;&gt;Do you live in the City ?&lt;/label&gt;
-##           &lt;div class=&quot;shiny-options-group&quot;&gt;
-##             &lt;div class=&quot;radio&quot;&gt;
-##               &lt;label&gt;
-##                 &lt;input type=&quot;radio&quot; name=&quot;rb.rur&quot; value=&quot;1&quot; checked=&quot;checked&quot;/&gt;
-##                 &lt;span&gt;Yes&lt;/span&gt;
-##               &lt;/label&gt;
-##             &lt;/div&gt;
-##             &lt;div class=&quot;radio&quot;&gt;
-##               &lt;label&gt;
-##                 &lt;input type=&quot;radio&quot; name=&quot;rb.rur&quot; value=&quot;0&quot;/&gt;
-##                 &lt;span&gt;No&lt;/span&gt;
-##               &lt;/label&gt;
+##           &lt;div id=&quot;rb.rur&quot; class=&quot;form-group shiny-input-radiogroup shiny-input-container&quot;&gt;
+##             &lt;label class=&quot;control-label&quot; for=&quot;rb.rur&quot;&gt;Do you live in the City ?&lt;/label&gt;
+##             &lt;div class=&quot;shiny-options-group&quot;&gt;
+##               &lt;div class=&quot;radio&quot;&gt;
+##                 &lt;label&gt;
+##                   &lt;input type=&quot;radio&quot; name=&quot;rb.rur&quot; value=&quot;1&quot; checked=&quot;checked&quot;/&gt;
+##                   &lt;span&gt;Yes&lt;/span&gt;
+##                 &lt;/label&gt;
+##               &lt;/div&gt;
+##               &lt;div class=&quot;radio&quot;&gt;
+##                 &lt;label&gt;
+##                   &lt;input type=&quot;radio&quot; name=&quot;rb.rur&quot; value=&quot;0&quot;/&gt;
+##                   &lt;span&gt;No&lt;/span&gt;
+##                 &lt;/label&gt;
+##               &lt;/div&gt;
 ##             &lt;/div&gt;
 ##           &lt;/div&gt;
-##         &lt;/div&gt;
-##         &lt;div class=&quot;form-group shiny-input-container&quot;&gt;
-##           &lt;label for=&quot;ti.acr&quot;&gt;Size of Premises (in acres)&lt;/label&gt;
-##           &lt;input id=&quot;ti.acr&quot; type=&quot;text&quot; class=&quot;form-control&quot; value=&quot;&quot;/&gt;
-##         &lt;/div&gt;
-##         &lt;div class=&quot;form-group shiny-input-container&quot;&gt;
-##           &lt;label for=&quot;ti.use&quot;&gt;What is your Monthly water consumption (in gallons)&lt;/label&gt;
-##           &lt;input id=&quot;ti.use&quot; type=&quot;text&quot; class=&quot;form-control&quot; value=&quot;&quot;/&gt;
-##         &lt;/div&gt;
-##         &lt;div&gt;
-##           &lt;button type=&quot;submit&quot; class=&quot;btn btn-primary&quot;&gt;Submit&lt;/button&gt;
-##         &lt;/div&gt;
-##       &lt;/form&gt;
+##           &lt;div class=&quot;form-group shiny-input-container&quot;&gt;
+##             &lt;label for=&quot;ti.acr&quot;&gt;Size of Premises (in acres)&lt;/label&gt;
+##             &lt;input id=&quot;ti.acr&quot; type=&quot;text&quot; class=&quot;form-control&quot; value=&quot;&quot;/&gt;
+##           &lt;/div&gt;
+##           &lt;div class=&quot;form-group shiny-input-container&quot;&gt;
+##             &lt;label for=&quot;ti.use&quot;&gt;What is your Monthly water consumption (in gallons)&lt;/label&gt;
+##             &lt;input id=&quot;ti.use&quot; type=&quot;text&quot; class=&quot;form-control&quot; value=&quot;&quot;/&gt;
+##           &lt;/div&gt;
+##           &lt;div&gt;
+##             &lt;button type=&quot;submit&quot; class=&quot;btn btn-primary&quot;&gt;Submit&lt;/button&gt;
+##           &lt;/div&gt;
+##         &lt;/form&gt;
+##       &lt;/div&gt;
+##       &lt;div class=&quot;col-sm-8&quot;&gt;
+##         &lt;br/&gt;
+##         &lt;br/&gt;
+##         &lt;br/&gt;
+##         &lt;br/&gt;
+##         &lt;h3&gt;The Verdict :&lt;/h3&gt;
+##         &lt;pre id=&quot;op1&quot; class=&quot;shiny-text-output&quot;&gt;&lt;/pre&gt;
+##       &lt;/div&gt;
 ##     &lt;/div&gt;
-##     &lt;div class=&quot;col-sm-8&quot;&gt;&lt;/div&gt;
 ##   &lt;/div&gt;
 ## &lt;/div&gt;
 </code></pre>
 
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-5" style="background:;">
-  <article data-timings="">
-    
   </article>
   <!-- Presenter Notes -->
 </slide>
@@ -225,20 +242,14 @@ Work Around: A threshold of 10 was &quot;hard-wired&quot; into the code instead 
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=3 title='Choice of the Model - The Base Study'>
+        data-slide=3 title='Description of the App'>
          3
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=4 title='Description of the App (as originally intended)'>
+        data-slide=4 title='Description of the App (cont&#39;d...)'>
          4
-      </a>
-    </li>
-    <li>
-      <a href="#" target="_self" rel='tooltip' 
-        data-slide=5 title='NA'>
-         5
       </a>
     </li>
   </ul>
